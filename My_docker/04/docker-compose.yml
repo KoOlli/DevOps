@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  quest5:
+    build: ../05
+
+  quest6:
+    build: ./
+    depends_on:
+      - quest5
+    ports:
+      - "80:8080"
