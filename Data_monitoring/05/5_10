@@ -1,0 +1,16 @@
+SIZE=$(find $1 -maxdepth 1 -type f -exec du -Shxa {} + | sort -rn | head -10)
+var=1
+NAME=$(awk '{print $2}' <<<$SIZE)
+for file in $NAME
+do
+    SIZE="$(du -Shxa "$file" | awk '{print $1}')" 
+    TYPE="$(du -Shxa "$file" | awk '{print $2}')"
+    echo -n "$var"" - ""$file"", ""$SIZE"", "
+    TYPE_1="${TYPE##*.}"
+    if [[ "$TYPE_1" == "$TYPE" ]]; then
+    echo "NotStated"
+    else
+    echo "$TYPE_1"
+    fi
+    var=$[var + 1]
+done

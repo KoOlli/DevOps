@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "save info file?(Y/N): ";
+read result;
+if [ $result = "y" -o $result = "Y" ]; then
+./status > "$(date "+%d_%m_%y_%H_%M_%S.status")"
+else
+	exit 1
+fi

@@ -1,0 +1,10 @@
+SIZE=$(find $1 -executable -type f -exec du -Shxa {} + | sort -rn | head -10)
+var=1
+NAME=$(awk '{print $2}' <<<$SIZE)
+for file in $NAME
+do
+    SIZE="$(du -Shxa "$file" | awk '{print $1}')" 
+    HASH="$(md5sum "$file" | awk '{print $1}')"
+    echo "$var"" - ""$file"", ""$SIZE"", ""$HASH"
+    var=$[var + 1]
+done
