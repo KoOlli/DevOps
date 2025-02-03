@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # случайный IP-адрес
@@ -6,53 +5,91 @@ generate_ip() {
     echo "$((RANDOM % 256)).$((RANDOM % 256)).$((RANDOM % 256)).$((RANDOM % 256))"
 }
 
-# случайный HTTP-код ответа
-generate_status_code() {
-    local codes=(200 201 400 401 403 404 500 501 502 503)
-    echo "${codes[RANDOM % ${#codes[@]}]}"
-}
 
-# случайный HTTP-метод
-generate_method() {
-    local methods=("GET" "POST" "PUT" "PATCH" "DELETE")
-    echo "${methods[RANDOM % ${#methods[@]}]}"
-}
+# Массив с кодами ответов
+# -----------------------------------------------------------------------------------------------------------------
+# 200 OK: Запрос выполнен успешно.
+# 201 Created: Запрос выполнен, и был создан новый ресурс.
+# 400 Bad Request: Запрос не может быть обработан из-за синтаксической ошибки.
+# 401 Unauthorized: Запрос требует аутентификации пользователя.
+# 403 Forbidden: Сервер понял запрос, но отказывается его выполнять.
+# 404 Not Found: Запрашиваемый ресурс не найден на сервере.
+# 500 Internal Server Error: Внутренняя ошибка сервера.
+# 501 Not Implemented: Сервер не поддерживает функциональность, необходимую для выполнения запроса.
+# 502 Bad Gateway: Сервер, действующий как шлюз или прокси, получил недействительный ответ от upstream-сервера.
+# 503 Service Unavailable: Сервер временно недоступен (например, из-за перегрузки или технического обслуживания).
+# -----------------------------------------------------------------------------------------------------------------
+response_codes=(200 201 400 401 403 404 500 501 502 503)
 
-# генерация файла лога
-generate_log_file() {
-    local file_name="$1"
-        local num_entries="$2"
-    
-    for ((i = 0; i < num_entries; i++)); do
-        # генерация даты для лога
-        LOG_DATE=$(date +"[%d/%b/%Y]")
-        
-                # генерация URL-адреса
-                url="/$(tr -dc 'a-zA-Z0-9/' < /dev/urandom | head -c $((RANDOM % 20 + 5)))"
-                
-                # генерация агента
-                agents=("Mozilla/5.0" "Chrome/89.0" "Opera/74.0" "Safari/14.0" "IE/11.0" "Edge/89.0" "Crawler Bot" "Library Tool")
-                agent="${agents[RANDOM % ${#agents[@]}]}"
-                
-                # генерация IP, метода и кода ответа
-                ip=$(generate_ip)
-        method=$(generate_method)
-                status_code=$(generate_status_code)
-        met_url="$method $url"
-        # форматирование строки в стиле combined
+# Массив с методами
+methods=(GET POST PUT PATCH DELETE)
 
-        log_entry="$ip - $LOG_DATE "$met_url" $status_code - \"$agent\""
-        
-        # запись в файл
-        echo "$log_entry" >> "$file_name"
-    done
-}
+# Массив с URL
+urls=(
+    "/index.html"
+    "/about.html"
+    "/contact.html"
+    "/products.html"
+    "/services.html"
+    "/login"
+    "/logout"
+    "/api/v1/resource"
+)
 
-# сам скрипт
+# Массив с реферерами
+referers=(
+    "https://www.f5.com/about.html"
+    "https://www.f5.com/start.html"
+    "https://www.f5.com/contact.html"
+    "https://www.f5.com/products.html"
+    "https://www.f5.com/services.html"
+)
+
+# Массив с агентами
+user_agents=(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Version/14.0.1 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/86.0"
+    "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"
+)
+
+# Генерация логов
 for i in {1..5}; do
     log_file="nginx_log_$i.log"
-        num_entries=$((RANDOM % 901 + 100)) # рандомное кол-во записей от 100 до 1000
-    generate_log_file "$log_file" "$num_entries"
+
+    # Генерация случайного числа записей
+    num_records=$((RANDOM % 901 + 100))
+
+    # Генерация случайной даты для лога (в пределах последних 30 дней)
+    random_days=$((RANDOM % 30))
+    log_date=$(date -d "$random_days days ago" +"%d/%b/%Y")
+
+    # Начальное время
+    current_time_seconds=0
+
+    # Генерация временных меток по возрастанию
+    for ((j = 0; j < num_records; j++)); do
+        # Генерация случайных данных
+        ip=$(generate_ip)
+        response_code=${response_codes[$RANDOM % ${#response_codes[@]}]}
+        method=${methods[$RANDOM % ${#methods[@]}]}
+        url=${urls[$RANDOM % ${#urls[@]}]}
+        referer=${referers[$RANDOM % ${#referers[@]}]}
+        user_agent=${user_agents[$RANDOM % ${#user_agents[@]}]}
+
+        # Генерация случайного количества секунд для следующей записи
+        random_seconds=$((RANDOM % 600))
+        current_time_seconds=$((current_time_seconds + random_seconds))
+
+        # Формирование временного штампа
+        formatted_time=$(date -d "1970-01-01 +$current_time_seconds seconds" +"%H:%M:%S")
+        timestamp="[$log_date:$formatted_time +0000]"
+
+        # Запись в файл
+        echo "$ip - - $timestamp \"$method $url HTTP/1.1\" $response_code $((RANDOM % 5000)) \"$referer\" \"$user_agent\"" >> "$log_file"
+    done
 done
 
-echo "Логи успешно сгенерированы."
+
+echo "Логи успешно сгенерированы!"
