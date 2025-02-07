@@ -11,7 +11,7 @@ echo -ne "\033[32mВыберите один параметр: \033[0m"
 read PARAMETR
 
 if [ $PARAMETR = "1" ]; then
-    awk '{print}' ../04/nginx_log* | sort -nk10
+    awk '{print}' ../04/nginx_log* | sort -nk9
 elif [ $PARAMETR = "2" ]; then
     awk '{print $1}' ../04/nginx_log_* | sort -nu
 elif [ $PARAMETR = "3" ]; then
